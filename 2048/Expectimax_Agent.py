@@ -12,7 +12,7 @@ class ExpectimaxAgent(Agent):
         move, _ = self.expectimax(board, depth)
         return move
 
-    def expectimax(self, board, depth = 0):
+    def expectimax(self, board, depth):
         moves = board.get_available_moves()
         moves_boards = []
 
@@ -39,10 +39,10 @@ class ExpectimaxAgent(Agent):
         n_empty = len(empty_cells)
 
         if n_empty >= 6 and depth >= 3:
-            return self.heuristic_utility(board, n_empty)
+            return self.heuristic_utility(board)
 
         if n_empty >= 0 and depth >= 5:
-            return self.heuristic_utility(board, n_empty)
+            return self.heuristic_utility(board)
 
         if n_empty == 0:
             _, utility = self.expectimax(board, depth + 1)
@@ -68,14 +68,20 @@ class ExpectimaxAgent(Agent):
                 utility_sum[i] += utility[i] * t[2]
         return tuple(utility_sum)
 
-    def heuristic_utility(self, board: GameBoard, n_empty):
+    def heuristic_utility(self, board: GameBoard):
+
+        empty_cells = board.get_available_cells()
+        n_empty = len(empty_cells)
+
+        #combinacion de todas las heauristicas recomendadas: smoothness (smooth) + valor del tablero (valorT) + vacios (empty)
         grid = board.grid
 
         utility = 0
         smoothness = 0
 
-        big_t = np.sum(np.power(grid, 2))
-        s_grid = np.sqrt(grid)
+        s_grid = np.sqrt(grid) #Aplicar la raiz cuadrada al tablero
+
+        #sumar cada casilla  con la de su derecha y la de abajo y luego multiplicar por -1 es lo mismo que lo siguiente:
         smoothness -= np.sum(np.abs(s_grid[::,0] - s_grid[::,1]))
         smoothness -= np.sum(np.abs(s_grid[::,1] - s_grid[::,2]))
         smoothness -= np.sum(np.abs(s_grid[::,2] - s_grid[::,3]))
@@ -83,15 +89,20 @@ class ExpectimaxAgent(Agent):
         smoothness -= np.sum(np.abs(s_grid[1,::] - s_grid[2,::]))
         smoothness -= np.sum(np.abs(s_grid[2,::] - s_grid[3,::]))
         
-        empty_w = 100000
-        smoothness_w = 3
+        # Elevar este resultado a un smoothness_weight a determinar
+        smoothness_weights = 3
+        smooth = smoothness ** smoothness_weights 
 
-        empty_u = n_empty * empty_w
-        smooth_u = smoothness ** smoothness_w
-        big_t_u = big_t
+        #Multiplicar por un empty_weight (recomendable en el orden de las decenas de miles)
+        empty_weights = 100000
+        empty = n_empty * empty_weights
 
-        utility += big_t
-        utility += empty_u
-        utility += smooth_u
+        #Elevar el tablero al cuadrado y sumar todos los valores que se encuentran en el tablero
+        valorT = np.sum(np.power(grid, 2)) 
 
-        return (utility, empty_u, smooth_u, big_t_u)
+        #sumar todas las utilidades
+        utility += valorT
+        utility += empty
+        utility += smooth
+
+        return (utility, empty, smooth, valorT)
