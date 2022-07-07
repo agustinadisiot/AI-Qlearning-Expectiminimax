@@ -33,7 +33,7 @@ class ExpectimaxAgent(Agent):
 
         return best_direction, max_utility
 
-    def chance(self, board, depth = 0):
+    def chance(self, board, depth):
        
         empty_cells = board.get_available_cells()
         n_empty = len(empty_cells)
