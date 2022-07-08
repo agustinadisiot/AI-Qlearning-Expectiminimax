@@ -16,7 +16,7 @@ class MinimaxAgent(Agent):
         moves = board.get_available_moves()
         maxUtility = -np.inf
         nextDir = -1
-        depth = 4
+        depth = 5
 
 
         for move in moves:
@@ -74,16 +74,16 @@ class MinimaxAgent(Agent):
         s_grid = np.sqrt(grid) #Aplicar la raiz cuadrada al tablero
 
         #sumar cada casilla  con la de su derecha y la de abajo y luego multiplicar por -1 es lo mismo que lo siguiente:
-        smoothness -= np.sum(np.abs(s_grid[::,0] - s_grid[::,1]))
-        smoothness -= np.sum(np.abs(s_grid[::,1] - s_grid[::,2]))
-        smoothness -= np.sum(np.abs(s_grid[::,2] - s_grid[::,3]))
-        smoothness -= np.sum(np.abs(s_grid[0,::] - s_grid[1,::]))
-        smoothness -= np.sum(np.abs(s_grid[1,::] - s_grid[2,::]))
-        smoothness -= np.sum(np.abs(s_grid[2,::] - s_grid[3,::]))
+        smoothness += np.sum(np.abs(s_grid[::,0] - s_grid[::,1]))
+        smoothness += np.sum(np.abs(s_grid[::,1] - s_grid[::,2]))
+        smoothness += np.sum(np.abs(s_grid[::,2] - s_grid[::,3]))
+        smoothness += np.sum(np.abs(s_grid[0,::] - s_grid[1,::]))
+        smoothness += np.sum(np.abs(s_grid[1,::] - s_grid[2,::]))
+        smoothness += np.sum(np.abs(s_grid[2,::] - s_grid[3,::]))
         
         # Elevar este resultado a un smoothness_weight a determinar
         smoothness_weights = 3
-        smooth = smoothness ** smoothness_weights 
+        smooth = -1*smoothness ** smoothness_weights 
 
         #Multiplicar por un empty_weight (recomendable en el orden de las decenas de miles)
         empty_weights = 100000
