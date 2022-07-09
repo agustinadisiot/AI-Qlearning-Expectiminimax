@@ -7,66 +7,69 @@ class ExpectimaxAgent(Agent):
     def init(self):
         pass
 
+    def get_child(self, board, move):
+        temp = board.clone()
+        temp.move(move)
+        return temp
+
     def play(self, board:GameBoard):
-        depth = 100
-        move, _ = self.expectimax(board, depth)
-        return move
-
-    def expectimax(self, board, depth):
         moves = board.get_available_moves()
-        moves_boards = []
+        maxUtility = -np.inf
+        nextDir = -1
+        depth = 3
 
-        for m in moves:
-            m_board = board.clone()
-            m_board.move(m)
-            moves_boards.append((m, m_board))
 
-        max_utility = (float('-inf'),0,0,0)
-        best_direction = None
+        for move in moves:
+            child = self.get_child(board, move)
 
-        for mb in moves_boards:
-            utility = self.chance(mb[1], depth + 1)
+            utility = self.expectimax(child, depth, "board") 
 
-            if utility[0] >= max_utility[0]:
-                max_utility = utility
-                best_direction = mb[0]
+            if utility >= maxUtility:
+                maxUtility = utility
+                nextDir = move
 
-        return best_direction, max_utility
+        return nextDir
 
-    def chance(self, board, depth):
-       
-        empty_cells = board.get_available_cells()
-        n_empty = len(empty_cells)
+    def check_win(self, board: GameBoard):
+        return board.get_max_tile() >= 2048
 
-        if n_empty >= 6 and depth >= 3:
-            return self.heuristic_utility(board)
+    def expectimax(self, board, depth, turn):
+        if self.check_win(board):
+            return np.inf 
+        if len(board.get_available_moves()) == 0:
+            return -np.inf
+        if depth == 0:
+            return self.heuristic_utility(board)[0]
+        if turn == "player1":
+            bestValue =  -np.inf
+            children = []
+            for move in board.get_available_moves():
+                children.append(self.get_child(board, move))
+            for child in children:
+                val = self.expectimax(child, depth-1, "board")
+                bestValue = max(bestValue, val)
+            return bestValue
+        else:
+            #bestValue = np.inf
+            empty = board.get_available_cells();
 
-        if n_empty >= 0 and depth >= 5:
-            return self.heuristic_utility(board)
+            chance_2 = (.9 * (1 / len(empty)))
+            chance_4 = (.1 * (1 / len(empty)))
+            children = []
+            total = 0
+            for pos in empty:
+                current_grid2 = board.clone()
+                current_grid4 = board.clone()
+                
+                current_grid2.insert_tile(pos, 2)
+                current_grid4.insert_tile(pos, 4)
 
-        if n_empty == 0:
-            _, utility = self.expectimax(board, depth + 1)
-            return utility
+                val2 = self.expectimax(current_grid2, depth-1, "player1")
+                val4 =self.expectimax(current_grid4, depth-1, "player1")
+                total += val2 * chance_2 + val4 * chance_4
 
-        possible_tiles = []
+            return total
 
-        chance_2 = (.9 * (1 / n_empty))
-        chance_4 = (.1 * (1 / n_empty))
-        
-        for empty_cell in empty_cells:
-            possible_tiles.append((empty_cell, 2, chance_2))
-            possible_tiles.append((empty_cell, 4, chance_4))
-
-        utility_sum = [0, 0, 0, 0]
-
-        for t in possible_tiles:
-            t_board = board.clone()
-            t_board.insert_tile(t[0], t[1])
-            _, utility = self.expectimax(t_board, depth + 1)
-
-            for i in range(4):
-                utility_sum[i] += utility[i] * t[2]
-        return tuple(utility_sum)
 
     def heuristic_utility(self, board: GameBoard):
 

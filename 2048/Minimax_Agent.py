@@ -16,13 +16,13 @@ class MinimaxAgent(Agent):
         moves = board.get_available_moves()
         maxUtility = -np.inf
         nextDir = -1
-        depth = 4
+        depth = 3
 
 
         for move in moves:
             child = self.get_child(board, move)
 
-            utility = self.minimax(child, depth, "player1") 
+            utility = self.minimax(child, depth, "board") 
 
             if utility >= maxUtility:
                 maxUtility = utility
@@ -30,8 +30,15 @@ class MinimaxAgent(Agent):
 
         return nextDir
 
+    def check_win(self, board: GameBoard):
+        return board.get_max_tile() >= 2048
+
     def minimax(self, board, depth, turn):
-        if len(board.get_available_moves()) == 0 or depth == 0:
+        if self.check_win(board):
+            return np.inf 
+        if len(board.get_available_moves()) == 0:
+            return -np.inf
+        if depth == 0:
             return self.heuristic_utility(board)
         if turn == "player1":
             bestValue =  -np.inf
@@ -41,7 +48,7 @@ class MinimaxAgent(Agent):
             for child in children:
                 val = self.minimax(child, depth-1, "board")
                 bestValue = max(bestValue, val)
-                return bestValue
+            return bestValue
         else:
             bestValue = np.inf
             empty = board.get_available_cells();
