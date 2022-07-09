@@ -73,7 +73,7 @@ class ExpectimaxAgent(Agent):
         empty_cells = board.get_available_cells()
         n_empty = len(empty_cells)
 
-        #combinacion de todas las heauristicas recomendadas: smoothness (smooth) + valor del tablero (valorT) + vacios (empty)
+        #combinacion de todas las heuristicas recomendadas: smoothness (smooth) + valor del tablero (valorT) + vacios (empty)
         grid = board.grid
 
         utility = 0

@@ -16,7 +16,7 @@ class MinimaxAgent(Agent):
         moves = board.get_available_moves()
         maxUtility = -np.inf
         nextDir = -1
-        depth = 5
+        depth = 4
 
 
         for move in moves:
